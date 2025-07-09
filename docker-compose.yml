@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  # Backend AGH Shop
+  backend:
+    image: agh-shop-backend:latest
+    ports:
+      - "8080:8080"
+    networks:
+      - agh-shop-network
+
+  # Frontend AGH Shop
+  frontend:
+    image: mwydmanski/agh-shop-frontend:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - agh-shop-network
+
+networks:
+  agh-shop-network:
+    driver: bridge
