@@ -1,4 +1,4 @@
-package com.agh.shop.jpa;
+package com.agh.shop.model;
 
 public enum OrderStatus {
     PENDING,

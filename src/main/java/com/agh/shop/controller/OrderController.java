@@ -2,8 +2,8 @@ package com.agh.shop.controller;
 
 import com.agh.shop.model.OrderDTO;
 import com.agh.shop.model.OrderResponse;
+import com.agh.shop.model.OrderStatus;
 import com.agh.shop.model.ShipOrderRequest;
-import com.agh.shop.jpa.OrderStatus;
 import com.agh.shop.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

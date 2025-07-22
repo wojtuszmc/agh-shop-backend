@@ -1,6 +1,7 @@
 package com.agh.shop.config;
 
 import com.agh.shop.jpa.*;
+import com.agh.shop.model.OrderStatus;
 import com.agh.shop.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,5 +1,6 @@
 package com.agh.shop.jpa;
 
+import com.agh.shop.model.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

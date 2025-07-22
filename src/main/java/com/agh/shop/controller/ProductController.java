@@ -1,6 +1,6 @@
 package com.agh.shop.controller;
 
-import com.agh.shop.dto.ProductRequest;
+import com.agh.shop.model.ProductRequest;
 import com.agh.shop.jpa.Product;
 import com.agh.shop.service.ProductService;
 import jakarta.validation.Valid;

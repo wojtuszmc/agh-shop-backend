@@ -1,3 +1,5 @@
+package com.agh.shop.jpa;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

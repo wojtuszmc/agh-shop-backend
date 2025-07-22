@@ -6,7 +6,7 @@ import com.agh.shop.model.OrderResponse;
 import com.agh.shop.model.ShipOrderRequest;
 import com.agh.shop.jpa.Order;
 import com.agh.shop.jpa.OrderItem;
-import com.agh.shop.jpa.OrderStatus;
+import com.agh.shop.model.OrderStatus;
 import com.agh.shop.exception.BadRequestException;
 import com.agh.shop.exception.ResourceNotFoundException;
 import com.agh.shop.repository.OrderRepository;
@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +27,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
 
+    @Transactional(readOnly = true)
     public OrderResponse getAllOrders(OrderStatus status, int limit, int offset) {
         Pageable pageable = PageRequest.of(offset / limit, limit);
         Page<Order> page;
@@ -47,6 +49,7 @@ public class OrderService {
         return response;
     }
 
+    @Transactional(readOnly = true)
     public OrderDTO getOrderById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Zamówienie o ID " + id + " nie zostało znalezione"));
@@ -88,10 +91,14 @@ public class OrderService {
         dto.setShippedAt(order.getShippedAt());
         dto.setDeliveredAt(order.getDeliveredAt());
 
-        // Konwertuj pozycje zamówienia
-        dto.setItems(order.getItems().stream()
-                .map(this::convertItemToDTO)
-                .collect(Collectors.toList()));
+        // Konwertuj pozycje zamówienia - bezpieczna inicjalizacja
+        if (order.getItems() != null) {
+            dto.setItems(order.getItems().stream()
+                    .map(this::convertItemToDTO)
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setItems(new ArrayList<>());
+        }
 
         return dto;
     }

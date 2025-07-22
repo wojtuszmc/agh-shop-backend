@@ -1,7 +1,6 @@
 package com.agh.shop.model;
 
 import com.agh.shop.jpa.Address;
-import com.agh.shop.jpa.OrderStatus;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
