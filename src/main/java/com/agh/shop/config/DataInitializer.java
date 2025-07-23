@@ -105,7 +105,8 @@ public class DataInitializer {
             item2.setUnitPrice(monitor.getPrice());
             item2.setTotalPrice(monitor.getPrice());
 
-            savedOrder.setItems(Arrays.asList(item1, item2));
+            savedOrder.getItems().add(item1);
+            savedOrder.getItems().add(item2);
             orderRepository.save(savedOrder);
 
             log.info("Inicjalizacja danych zakończona!");

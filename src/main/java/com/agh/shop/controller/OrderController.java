@@ -2,8 +2,8 @@ package com.agh.shop.controller;
 
 import com.agh.shop.model.OrderDTO;
 import com.agh.shop.model.OrderResponse;
-import com.agh.shop.model.OrderStatus;
 import com.agh.shop.model.ShipOrderRequest;
+import com.agh.shop.model.OrderStatus;
 import com.agh.shop.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,13 +12,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class OrderController {
 
     private final OrderService orderService;
 
     @GetMapping
     public ResponseEntity<OrderResponse> getAllOrders(
-            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) String status,  // Zmiana z OrderStatus na String
             @RequestParam(defaultValue = "50") int limit,
             @RequestParam(defaultValue = "0") int offset) {
 
@@ -30,7 +31,17 @@ public class OrderController {
             offset = 0;
         }
 
-        OrderResponse response = orderService.getAllOrders(status, limit, offset);
+        // Konwersja stringa na enum (obsługa małych/wielkich liter)
+        OrderStatus orderStatus = null;
+        if (status != null && !status.isEmpty()) {
+            try {
+                orderStatus = OrderStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // Ignoruj nieprawidłowe statusy
+            }
+        }
+
+        OrderResponse response = orderService.getAllOrders(orderStatus, limit, offset);
         return ResponseEntity.ok(response);
     }
 
