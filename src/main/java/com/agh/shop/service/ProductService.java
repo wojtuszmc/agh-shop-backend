@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,52 @@ public class ProductService {
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    public List<Product> getAllProducts(String category, String search, String sortBy, Boolean inStock) {
+        List<Product> products = productRepository.findAll();
+
+        // Filter by category
+        if (category != null && !category.trim().isEmpty()) {
+            products = products.stream()
+                    .filter(product -> product.getCategory().equalsIgnoreCase(category.trim()))
+                    .collect(Collectors.toList());
+        }
+
+        // Filter by search term (name or description)
+        if (search != null && !search.trim().isEmpty()) {
+            String searchLower = search.trim().toLowerCase();
+            products = products.stream()
+                    .filter(product -> 
+                        product.getName().toLowerCase().contains(searchLower) ||
+                        (product.getDescription() != null && product.getDescription().toLowerCase().contains(searchLower)))
+                    .collect(Collectors.toList());
+        }
+
+        // Filter by stock availability
+        if (inStock != null && inStock) {
+            products = products.stream()
+                    .filter(product -> product.getQuantity() > 0)
+                    .collect(Collectors.toList());
+        }
+
+        // Sort products
+        if (sortBy != null) {
+            switch (sortBy.toLowerCase()) {
+                case "price-asc":
+                    products.sort(Comparator.comparing(Product::getPrice));
+                    break;
+                case "price-desc":
+                    products.sort(Comparator.comparing(Product::getPrice).reversed());
+                    break;
+                case "name":
+                default:
+                    products.sort(Comparator.comparing(Product::getName));
+                    break;
+            }
+        }
+
+        return products;
     }
 
     public Product getProductById(Long id) {

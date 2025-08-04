@@ -4,6 +4,7 @@ import com.agh.shop.model.OrderDTO;
 import com.agh.shop.model.OrderItemDTO;
 import com.agh.shop.model.OrderResponse;
 import com.agh.shop.model.ShipOrderRequest;
+import com.agh.shop.model.OrderRequest;
 import com.agh.shop.jpa.Order;
 import com.agh.shop.jpa.OrderItem;
 import com.agh.shop.model.OrderStatus;
@@ -54,6 +55,51 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Zamówienie o ID " + id + " nie zostało znalezione"));
         return convertToDTO(order);
+    }
+
+    public OrderDTO createOrder(OrderRequest request) {
+        Order order = new Order();
+        
+        // Generate order number if not provided
+        String orderNumber;
+        if (request.getOrderNumber() == null || request.getOrderNumber().trim().isEmpty()) {
+            orderNumber = "AGH-" + System.currentTimeMillis();
+        } else {
+            orderNumber = request.getOrderNumber();
+        }
+        
+        // Check if order number already exists
+        if (orderRepository.findByOrderNumber(orderNumber).isPresent()) {
+            throw new BadRequestException("Order number " + orderNumber + " already exists");
+        }
+        
+        order.setOrderNumber(orderNumber);
+        
+        order.setCustomerName(request.getCustomerName());
+        order.setCustomerEmail(request.getCustomerEmail());
+        order.setCustomerPhone(request.getCustomerPhone());
+        order.setShippingAddress(request.getShippingAddress());
+        order.setBillingAddress(request.getBillingAddress());
+        order.setTotalAmount(request.getTotalAmount());
+        order.setStatus(OrderStatus.PENDING);
+        
+        // Create order items and establish bidirectional relationship
+        if (request.getItems() != null && !request.getItems().isEmpty()) {
+            for (OrderItemDTO itemDTO : request.getItems()) {
+                OrderItem item = new OrderItem();
+                item.setOrder(order);
+                item.setProductId(itemDTO.getProductId());
+                item.setProductName(itemDTO.getProductName());
+                item.setQuantity(itemDTO.getQuantity());
+                item.setUnitPrice(itemDTO.getUnitPrice());
+                item.setTotalPrice(itemDTO.getTotalPrice());
+                order.getItems().add(item);
+            }
+        }
+        
+        // Save order with items in one transaction
+        Order savedOrder = orderRepository.save(order);
+        return convertToDTO(savedOrder);
     }
 
     public OrderDTO shipOrder(Long id, ShipOrderRequest request) {
