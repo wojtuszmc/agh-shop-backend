@@ -12,6 +12,7 @@ import com.agh.shop.exception.BadRequestException;
 import com.agh.shop.exception.ResourceNotFoundException;
 import com.agh.shop.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -81,7 +82,7 @@ public class OrderService {
         order.setShippingAddress(request.getShippingAddress());
         order.setBillingAddress(request.getBillingAddress());
         order.setTotalAmount(request.getTotalAmount());
-        order.setStatus(OrderStatus.PENDING);
+        order.setStatus(OrderStatus.pending);
         
         // Create order items and establish bidirectional relationship
         if (request.getItems() != null && !request.getItems().isEmpty()) {
@@ -107,14 +108,29 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Zamówienie o ID " + id + " nie zostało znalezione"));
 
         // Sprawdź czy zamówienie może być wysłane
-        if (order.getStatus() != OrderStatus.PROCESSING) {
+        if (order.getStatus() != OrderStatus.processing) {
             throw new BadRequestException("Zamówienie może być wysłane tylko ze statusu PROCESSING. Aktualny status: " + order.getStatus());
         }
 
-        order.setStatus(OrderStatus.SHIPPED);
+        order.setStatus(OrderStatus.shipped);
         order.setTrackingNumber(request.getTrackingNumber());
         order.setCarrier(request.getCarrier());
         order.setShippedAt(LocalDateTime.now());
+
+        Order savedOrder = orderRepository.save(order);
+        return convertToDTO(savedOrder);
+    }
+
+    public OrderDTO deliverOrder(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Zamówienie o ID " + id + " nie zostało znalezione"));
+        if (order.getStatus() != OrderStatus.shipped) {
+            throw new BadRequestException("Zamówienie może być dostarczone tylko ze statusu shipped. Aktualny status: "
+                    + order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.delivered);
+        order.setDeliveredAt(LocalDateTime.now());
 
         Order savedOrder = orderRepository.save(order);
         return convertToDTO(savedOrder);

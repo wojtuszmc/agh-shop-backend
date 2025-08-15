@@ -101,7 +101,7 @@ public class DataInitializer {
                     order.setShippingAddress(shippingAddress);
                     order.setBillingAddress(shippingAddress);
 
-                    order.setStatus(OrderStatus.PROCESSING);
+                    order.setStatus(OrderStatus.processing);
                     order.setTotalAmount(7499.98);
 
                     Order savedOrder = orderRepository.save(order);

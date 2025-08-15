@@ -80,7 +80,7 @@ public class Order {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         if (status == null) {
-            status = OrderStatus.PENDING;
+            status = OrderStatus.pending;
         }
     }
 }

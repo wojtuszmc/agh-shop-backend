@@ -28,10 +28,10 @@ public class StatsController {
         stats.put("totalOrders", totalOrders);
 
         // Liczba zamówień według statusu
-        long pendingOrders = orderRepository.findByStatus(OrderStatus.PENDING, null).getTotalElements();
-        long processingOrders = orderRepository.findByStatus(OrderStatus.PROCESSING, null).getTotalElements();
-        long shippedOrders = orderRepository.findByStatus(OrderStatus.SHIPPED, null).getTotalElements();
-        long deliveredOrders = orderRepository.findByStatus(OrderStatus.DELIVERED, null).getTotalElements();
+        long pendingOrders = orderRepository.findByStatus(OrderStatus.pending, null).getTotalElements();
+        long processingOrders = orderRepository.findByStatus(OrderStatus.processing, null).getTotalElements();
+        long shippedOrders = orderRepository.findByStatus(OrderStatus.shipped, null).getTotalElements();
+        long deliveredOrders = orderRepository.findByStatus(OrderStatus.delivered, null).getTotalElements();
 
         stats.put("pendingOrders", pendingOrders);
         stats.put("processingOrders", processingOrders);

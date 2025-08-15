@@ -5,7 +5,8 @@
       "Bash(java:*)",
       "Bash(mvn clean:*)",
       "Bash(ls:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git restore:*)"
     ],
     "deny": []
   }

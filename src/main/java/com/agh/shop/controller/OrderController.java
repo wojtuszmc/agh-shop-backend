@@ -8,6 +8,7 @@ import com.agh.shop.model.ShipOrderRequest;
 import com.agh.shop.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +56,12 @@ public class OrderController {
             @PathVariable Long id,
             @RequestBody ShipOrderRequest request) {
         OrderDTO order = orderService.shipOrder(id, request);
+        return ResponseEntity.ok(order);
+    }
+
+    @PutMapping("/{id}/deliver")
+    public ResponseEntity<OrderDTO> deliverOrder(@PathVariable Long id) {
+        OrderDTO order = orderService.deliverOrder(id);
         return ResponseEntity.ok(order);
     }
 
