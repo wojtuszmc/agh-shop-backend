@@ -1,16 +1,13 @@
 package com.agh.shop.service;
 
-import com.agh.shop.model.OrderDTO;
-import com.agh.shop.model.OrderItemDTO;
-import com.agh.shop.model.OrderResponse;
-import com.agh.shop.model.ShipOrderRequest;
-import com.agh.shop.model.OrderRequest;
+import com.agh.shop.jpa.Product;
+import com.agh.shop.model.*;
 import com.agh.shop.jpa.Order;
 import com.agh.shop.jpa.OrderItem;
-import com.agh.shop.model.OrderStatus;
 import com.agh.shop.exception.BadRequestException;
 import com.agh.shop.exception.ResourceNotFoundException;
 import com.agh.shop.repository.OrderRepository;
+import com.agh.shop.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
@@ -20,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +26,7 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
 
     @Transactional(readOnly = true)
     public OrderResponse getAllOrders(OrderStatus status, int limit, int offset) {
@@ -60,7 +59,58 @@ public class OrderService {
 
     public OrderDTO createOrder(OrderRequest request) {
         Order order = new Order();
-        
+
+        String orderNumber = generateOrderNumber();
+        order.setOrderNumber(orderNumber);
+
+        order.setCustomerName(request.getCustomerName());
+        order.setCustomerEmail(request.getCustomerEmail());
+        order.setCustomerPhone(request.getCustomerPhone());
+        order.setShippingAddress(request.getShippingAddress());
+        order.setBillingAddress(request.getBillingAddress());
+
+        order.setStatus(OrderStatus.pending);
+
+        double calculatedTotal = 0.0;
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new BadRequestException("Zamówienie musi zawierać chociaż jeden produkt");
+        }
+
+        for (SimpleOrderItemRequest itemRequest : request.getItems()) {
+            Product product = productRepository.findById(itemRequest.getProductId()).
+                    orElseThrow(() -> new ResourceNotFoundException(
+                            "Produkt o ID " + itemRequest.getProductId() + " nie istnieje"
+                    ));
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProductId(product.getId());
+            orderItem.setProductName(product.getName());
+            orderItem.setQuantity(itemRequest.getQuantity());
+            orderItem.setUnitPrice(product.getPrice());
+            orderItem.setTotalPrice(product.getPrice() * itemRequest.getQuantity());
+
+            orderItems.add(orderItem);
+            calculatedTotal += orderItem.getTotalPrice();
+
+            product.setQuantity(product.getQuantity() - itemRequest.getQuantity());
+            productRepository.save(product);
+        }
+
+        order.setTotalAmount(calculatedTotal);
+        order.setItems(orderItems);
+
+        Order savedOrder = orderRepository.save(order);
+
+        return convertToDTO(savedOrder);
+    }
+
+    private String generateOrderNumber() {
+        return "AGH-" + System.currentTimeMillis();
+    }
+      /*
         // Generate order number if not provided
         String orderNumber;
         if (request.getOrderNumber() == null || request.getOrderNumber().trim().isEmpty()) {
@@ -101,7 +151,7 @@ public class OrderService {
         // Save order with items in one transaction
         Order savedOrder = orderRepository.save(order);
         return convertToDTO(savedOrder);
-    }
+    }*/
 
     public OrderDTO shipOrder(Long id, ShipOrderRequest request) {
         Order order = orderRepository.findById(id)

@@ -23,7 +23,4 @@ public class ProductRequest {
     @NotNull(message = "Ilość jest wymagana")
     @Min(value = 0, message = "Ilość nie może być ujemna")
     private Integer quantity;
-
-    @Size(max = 50, message = "SKU nie może przekraczać 50 znaków")
-    private String sku;
 }
